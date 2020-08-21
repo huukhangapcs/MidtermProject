@@ -3,10 +3,7 @@ package com.apcs2.midtermmoblie;
 import androidx.annotation.ColorInt;
 import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
-import androidx.core.app.ActivityCompat.OnRequestPermissionsResultCallback;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.core.graphics.drawable.DrawableCompat;
@@ -14,38 +11,32 @@ import androidx.fragment.app.FragmentActivity;
 
 import android.Manifest;
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
-import android.icu.text.Transliterator;
 import android.location.Address;
 import android.location.Criteria;
 import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationManager;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Handler;
 import android.speech.tts.TextToSpeech;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.View;
-import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -56,24 +47,20 @@ import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.internal.ICameraUpdateFactoryDelegate;
 import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
@@ -86,6 +73,7 @@ import com.google.android.libraries.places.api.model.RectangularBounds;
 import com.google.android.libraries.places.api.model.TypeFilter;
 import com.google.android.libraries.places.widget.AutocompleteSupportFragment;
 import com.google.android.libraries.places.widget.listener.PlaceSelectionListener;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -93,17 +81,13 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.database.annotations.NotNull;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.sql.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import com.google.android.libraries.places.api.Places;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, GoogleApiClient.OnConnectionFailedListener {
     FusedLocationProviderClient mFusedLocationProviderClient;
@@ -115,7 +99,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private boolean misTextToSpeech = true;
     private int REQUEST_PERMISSION_ACCESS_FINE_LOCATION_AND_INTERNET_CODE = 1235;
     private String TAG_FAIL = "locationFail";
-    private ArrayList<Landmark> _landmarks = new ArrayList<>();
+    ArrayList<LandMark> landmarks;
     LinearLayout containerLayout;
     LinearLayout requestForm;
     LinearLayout deltailView;
@@ -135,6 +119,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     ArrayList<EditText> editFormText;
     DatabaseReference databaseReference;
     private ArrayList<Marker> mMarkers;
+    ImageButton logout;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -186,7 +171,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         createAutosuggestionSerachAdress();
 
         //l
-
+        landmarks = new ArrayList<>();
         mMarkers = new ArrayList<>();
         containerLayout = findViewById(R.id.container);
         requestForm = findViewById(R.id.request_from);
@@ -225,13 +210,20 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         //l
         createEditFormTextList();
+        logout = (ImageButton) findViewById(R.id.logoutButton);
+        logout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                FirebaseAuth.getInstance().signOut();
+                Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+                startActivity(intent);
+            }
+        });
 
-
-        databaseReference = FirebaseDatabase.getInstance().getReference("Location");
+        databaseReference = FirebaseDatabase.getInstance().getReference("High");
         databaseReference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-
             }
 
             @Override
@@ -357,22 +349,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
         });
         button.callOnClick();
-//        mGoogleApiClient = new GoogleApiClient
-//                .Builder(this)
-//                .addApi(Places.GEO_DATA_API)
-//                .addApi(Places.PLACE_DETECTION_API)
-//                .enableAutoManage(this, this)
-//                .build();
-//        mPlaceAutocompleteAdapter = new PlaceAutocompleteAdapter(this, mGoogleApiClient, new LatLngBounds(new LatLng(0,0),new LatLng(10,10)), null);
-//        eLocation.setAdapter(mPlaceAutocompleteAdapter);
-        //      getDeviceLocation();
 
-//        Intent intent = getIntent();
-//        mLandmark = new Landmark(intent.getStringExtra("name"),
-//                intent.getStringExtra("des"),
-//                intent.getIntExtra("logoID", 0),
-//                intent.getDoubleExtra("lat", 0),
-//                intent.getDoubleExtra("long", 0));
     }
 
     public ArrayList<LatLng> decodePoly(String encoded) {
@@ -416,15 +393,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
             @Override
             public boolean onMarkerClick(Marker marker) {
-//                if (misTextToSpeech) {
-//                    mTextToSpeech.speak(mLandmark.getDescription(),
-//                            TextToSpeech.QUEUE_FLUSH, null);
-//                    Toast.makeText(getApplicationContext(),
-//                            mLandmark.getDescription(),
-//                            Toast.LENGTH_SHORT
-//                    ).show();
-//                }
-//                return false;
                 containerLayout = findViewById(R.id.container);
                 deltailView = findViewById(R.id.detail_view);
 
@@ -445,27 +413,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
         });
         loadData();
-        // nay cua thay k xai
-        //  displayMarkers();
     }
 
-//    private void displayMarkers() {
-//        Bitmap bmp = BitmapFactory.decodeResource(getResources(), mLandmark.getLogoID());
-//        bmp = Bitmap.createScaledBitmap(bmp, bmp.getWidth() / 4, bmp.getHeight() / 4, false);
-//        BitmapDescriptor bitmapDescriptor = BitmapDescriptorFactory.fromBitmap(bmp);
-//        mMarker = mMap.addMarker(new MarkerOptions()
-//                .position(mLandmark.getLatLng())
-//                .icon(bitmapDescriptor)
-//                .title(mLandmark.getName())
-//                .snippet(mLandmark.getDescription()));
-//        CameraPosition newCameraPosition = new CameraPosition.Builder()
-//                .target(mLandmark.getLatLng()) // Sets the center of the map to Mountain View
-//                .zoom(15)                      // Sets the zoom
-//                .bearing(90)                   // Sets the orientation of the camera to east
-//                .tilt(30)                      // Sets the tilt of the camera to 30 degrees
-//                .build();
-//        mMap.animateCamera(CameraUpdateFactory.newCameraPosition(newCameraPosition));
-//    }
 
     private boolean checkPermission() {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
@@ -678,7 +627,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             tmpArr.add(singleLine);
             //    Log.d("width", String.valueOf(singleLine.getWidth()));
         }
-        _landmarks.get(position).setPolylines(tmpArr);
+        landmarks.get(position).setPolylines(tmpArr);
 
     }
 
@@ -697,38 +646,68 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         return BitmapDescriptorFactory.fromBitmap(bitmap);
     }
 
-    public Landmark drawMarker(String title, String description, String location, String phone) {
+    public void drawMarker(LandMark landMark) {
 
 
         //push vao trong array landmarks
-        Landmark temp_lm = new Landmark(title, description, phone, new LatLng(0, 0), 1, new ArrayList<Polyline>());
-        databaseReference.child("Location").push().setValue(temp_lm);
+
+
 //        Toast.makeText(getApplicationContext(),
 //                    title+description+phone,
 //                    Toast.LENGTH_SHORT).show();
-
-
+        LatLng base = new LatLng(0,0);
+        String description = landMark.getDescription();
+        String title =landMark.getName();
+        String phone = landMark.get_phone();
+        String level = String.valueOf(landMark.get_emergencyLevel());
+        LatLng latLng = landMark.getLatLng();
         Log.d("DCCCC", "No picture");
         BitmapDescriptor bitmapDescriptor = null;
-        String level = (String) tEmergency.getText();
-        if (level != "") {
-            int color;
-            if (level.contains("High")) {
-                color = Color.RED;
-                temp_lm.set_emergencyLevel(3);
-            } else if (level.contains("Moderate")) {
-                color = Color.YELLOW;
-                temp_lm.set_emergencyLevel(2);
-            } else {
-                color = Color.BLUE;
-                temp_lm.set_emergencyLevel(1);
-            }
-            //    Bitmap bmp = BitmapFactory.decodeResource(getResources(), warning);
-            //    bmp = Bitmap.createScaledBitmap(bmp, bmp.getWidth() / 4, bmp.getHeight() / 4, false);
-            bitmapDescriptor = vectorToBitmap(R.drawable.warning, color);
-//            bitmapDescriptor = BitmapDescriptorFactory.fromBitmap(bmp);
+        int color;
+        if (landMark.get_emergencyLevel() ==1) {
+            color = Color.BLUE;}
+        else if (landMark.get_emergencyLevel() ==2) {
+            color = Color.YELLOW;}
+        else {
+            color = Color.RED;}
 
+        bitmapDescriptor = vectorToBitmap(R.drawable.warning, color);
+        if (latLng != base  && !description.equals("") && !title.equals("") && !phone.equals("")) {
+            String spitSign = "~";
+            String containerStr = description + spitSign + phone + spitSign + level;
+            mMarker = mMap.addMarker(new MarkerOptions()
+                    .position(latLng)
+                    .icon(bitmapDescriptor)
+                    .title(title)
+                    .snippet(containerStr));
+            mMarkers.add(mMarker);
+            landmarks.add(landMark);
         }
+
+
+    }
+
+    private void throwErrorWarning() {
+        TextView error = findViewById(R.id.error_from);
+        error.setVisibility(View.VISIBLE);
+    }
+
+    private void moveCamera(LatLng tmpLatLng) {
+        CameraPosition newCameraPosition = new CameraPosition.Builder()
+                .target(tmpLatLng) // Sets the center of the map to Mountain View
+                .zoom(15)                      // Sets the zoom
+                .bearing(90)                   // Sets the orientation of the camera to east
+                .tilt(30)                      // Sets the tilt of the camera to 30 degrees
+                .build();
+        TextView error = findViewById(R.id.error_from);
+        mMap.animateCamera(CameraUpdateFactory.newCameraPosition(newCameraPosition));
+        error.setVisibility(View.GONE);
+        requestForm.setVisibility(View.GONE);
+        containerLayout.setGravity(Gravity.BOTTOM);
+    }
+    private void getLocationOfForm(LandMark landMark)
+    {
+        String location = String.valueOf(eLocation.getText());
         LatLng tmpLatLng = null;
         List<Address> addresses = null;
         if (cbCurrentLocation.isChecked() && checkPermission()) {
@@ -760,71 +739,53 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 //        Toast.makeText(getApplicationContext(),
 //                    address.toString(),
 //                   Toast.LENGTH_SHORT).show();
-        temp_lm.setLatLng(tmpLatLng);
-        if (tmpLatLng != null && !title.equals("") && !description.equals("") && !phone.equals("") && bitmapDescriptor != null) {
-            String spitSign = "~";
-            String containerStr = description + spitSign + phone + spitSign + level;
-            mMarker = mMap.addMarker(new MarkerOptions()
-                    .position(tmpLatLng)
-                    .icon(bitmapDescriptor)
-                    .title(title)
-                    .snippet(containerStr));
-            mMarkers.add(mMarker);
-            _landmarks.add(temp_lm);
-        }
-        return temp_lm;
-    }
+        landMark.setLatLng(tmpLatLng);
 
-    private void throwErrorWarning() {
-        TextView error = findViewById(R.id.error_from);
-        error.setVisibility(View.VISIBLE);
-    }
 
-    private void moveCamera(LatLng tmpLatLng) {
-        CameraPosition newCameraPosition = new CameraPosition.Builder()
-                .target(tmpLatLng) // Sets the center of the map to Mountain View
-                .zoom(15)                      // Sets the zoom
-                .bearing(90)                   // Sets the orientation of the camera to east
-                .tilt(30)                      // Sets the tilt of the camera to 30 degrees
-                .build();
-        TextView error = findViewById(R.id.error_from);
-        mMap.animateCamera(CameraUpdateFactory.newCameraPosition(newCameraPosition));
-        error.setVisibility(View.GONE);
-        requestForm.setVisibility(View.GONE);
-        containerLayout.setGravity(Gravity.BOTTOM);
     }
-
     public void saveMarker(View view) {
 
         //l
         String title = String.valueOf(eTitle.getText());
         String description = String.valueOf(eDescription.getText());
-        String location = String.valueOf(eLocation.getText());
         String phone = String.valueOf(ePhone.getText());
-        try {
-            Landmark newLand = drawMarker(title, description, location, phone);
-            moveCamera(newLand.getLatLng());
-        } catch (Exception e) {
-            e.printStackTrace();
-            throwErrorWarning();
+        String level = (String) tEmergency.getText();
+        int eLevel;
+        if (!level.equals("")) {
+            if (level.contains("High")) {
+                eLevel = 3;
+
+            } else if (level.contains("Moderate")) {
+                eLevel = 2;
+
+            } else {
+                eLevel = 1;
+
+            }
+            try {
+                LandMark temp_lm = new LandMark(title, description, phone, new LatLng(0, 0), eLevel, new ArrayList<Polyline>());
+                getLocationOfForm(temp_lm);
+                pushLmToDB(temp_lm);
+                drawMarker(temp_lm);
+                moveCamera(temp_lm.getLatLng());
+            } catch (Exception e) {
+                e.printStackTrace();
+                throwErrorWarning();
+            }
         }
-
-        // sEmergency.setOnItemClickListener(this;
-        //thiết lập sự kiện chọn phần tử cho Spinner
-
-
-//        mMarker = mMap.addMarker(new MarkerOptions()
-//                .position(tmpLatLng)
-//                .title("bx q8")
-//                .snippet("AAAAAAAAAAAAAAAAAAAAAAAAAAÂ"));
-        //10.762913
-        //106.6821717
-
-//        _landmarks.add(temp_lm);
     }
 
+    private void pushLmToDB(LandMark temp_lm) {
+        switch (temp_lm.get_emergencyLevel())
+        {
+            case 1: databaseReference.child("Low").push().setValue(temp_lm);
+            break;
+            case 2: databaseReference.child("Moderate").push().setValue(temp_lm);
+                break;
+            default: databaseReference.child("High").push().setValue(temp_lm);
+        }
+    }
 
-    //l
     private void clearForm() {
         containerLayout.setGravity(Gravity.BOTTOM);
         requestForm.setVisibility(View.GONE);
@@ -899,7 +860,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private void removeAMarker(int position) {
         mMarkers.get(position).remove();
         mMarkers.remove(position);
-        _landmarks.remove(position);
+        landmarks.remove(position);
     }
 
     public void close_form(View view) {
@@ -907,8 +868,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     public int find(String location, String title) {
-        for (int i = 0; i < _landmarks.size(); i++) {
-            Landmark landmark = _landmarks.get(i);
+        for (int i = 0; i < landmarks.size(); i++) {
+            LandMark landmark = landmarks.get(i);
             String tmpLatLg = String.valueOf(landmark.getLatLng().latitude) + "N, " + String.valueOf(landmark.getLatLng().longitude);
             if (landmark.getName().equals(title) && location.equals(tmpLatLg)) {
                 return i;
@@ -926,7 +887,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
           //  LatLng tmpLng = new LatLng(curLat, curLong);
             String[] extractedStr = extractDetailForm();
             int position = find(extractedStr[0], extractedStr[1]);
-            Landmark landmark = _landmarks.get(position);
+            LandMark landmark = landmarks.get(position);
             String url = createDirectionUri(curPosition, landmark.getLatLng());
             requestDirection(url, position);
             // check if get position success
@@ -939,9 +900,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     //l
     public void removeAllPolylineExceptAtPostion(int position) {
-        for (int i = 0; i < _landmarks.size(); i++) {
+        for (int i = 0; i < landmarks.size(); i++) {
             if (position != i) {
-                ArrayList<Polyline> tmpPolylines = _landmarks.get(i).getPolylines();
+                ArrayList<Polyline> tmpPolylines = landmarks.get(i).getPolylines();
 
                 for (int j = 0; j < tmpPolylines.size(); j++) {
                     tmpPolylines.get(j).remove();
