@@ -100,7 +100,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private boolean misTextToSpeech = true;
     private int REQUEST_PERMISSION_ACCESS_FINE_LOCATION_AND_INTERNET_CODE = 1235;
     private String TAG_FAIL = "locationFail";
-    ArrayList<LandMark> landmarks;
+    ArrayList<LandMark> _landmarks ;
     LinearLayout containerLayout;
     LinearLayout requestForm;
     LinearLayout deltailView;
@@ -147,7 +147,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         int max_danger=0;
         boolean isFind=false;
         boolean isOk=false;
-        Landmark result = null;
+        LandMark result = null;
         Log.e("sth",String.valueOf(_landmarks.size()));
         Log.e("sth",_stringSearch);
         if (_landmarks.size()!=0){
@@ -222,7 +222,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         createAutosuggestionSerachAdress();
 
         //l
-        landmarks = new ArrayList<>();
+        _landmarks = new ArrayList<>();
         mMarkers = new ArrayList<>();
         containerLayout = findViewById(R.id.container);
         requestForm = findViewById(R.id.request_from);
@@ -693,7 +693,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             tmpArr.add(singleLine);
             //    Log.d("width", String.valueOf(singleLine.getWidth()));
         }
-        landmarks.get(position).setPolylines(tmpArr);
+        _landmarks.get(position).setPolylines(tmpArr);
 
     }
 
@@ -747,7 +747,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     .title(title)
                     .snippet(containerStr));
             mMarkers.add(mMarker);
-            landmarks.add(landMark);
+            _landmarks.add(landMark);
         }
 
 
@@ -926,7 +926,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private void removeAMarker(int position) {
         mMarkers.get(position).remove();
         mMarkers.remove(position);
-        landmarks.remove(position);
+        _landmarks.remove(position);
     }
 
     public void close_form(View view) {
@@ -934,8 +934,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     public int find(String location, String title) {
-        for (int i = 0; i < landmarks.size(); i++) {
-            LandMark landmark = landmarks.get(i);
+        for (int i = 0; i < _landmarks.size(); i++) {
+            LandMark landmark = _landmarks.get(i);
             String tmpLatLg = String.valueOf(landmark.getLatLng().latitude) + "N, " + String.valueOf(landmark.getLatLng().longitude);
             if (landmark.getName().equals(title) && location.equals(tmpLatLg)) {
                 return i;
@@ -953,7 +953,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
           //  LatLng tmpLng = new LatLng(curLat, curLong);
             String[] extractedStr = extractDetailForm();
             int position = find(extractedStr[0], extractedStr[1]);
-            LandMark landmark = landmarks.get(position);
+            LandMark landmark = _landmarks.get(position);
             String url = createDirectionUri(curPosition, landmark.getLatLng());
             requestDirection(url, position);
             // check if get position success
@@ -966,9 +966,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     //l
     public void removeAllPolylineExceptAtPostion(int position) {
-        for (int i = 0; i < landmarks.size(); i++) {
+        for (int i = 0; i < _landmarks.size(); i++) {
             if (position != i) {
-                ArrayList<Polyline> tmpPolylines = landmarks.get(i).getPolylines();
+                ArrayList<Polyline> tmpPolylines = _landmarks.get(i).getPolylines();
 
                 for (int j = 0; j < tmpPolylines.size(); j++) {
                     tmpPolylines.get(j).remove();
