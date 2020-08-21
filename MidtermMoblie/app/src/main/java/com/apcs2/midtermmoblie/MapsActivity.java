@@ -248,7 +248,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         detailLocation = findViewById(R.id.detail_location);
         eTitle = findViewById(R.id.eTitle);
 
-        searchRequest= findViewById(R.id.searchRequest);
+        searchRequest= findViewById(R.id.sr);
         searchRequestBt= (Button)findViewById(R.id.bts);
 
 
@@ -282,14 +282,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
             public void onClick(View view) {
                 Log.e("sth","chung toi o day");
-                String pattern;
-                pattern = searchRequest.getText().toString();
+                String sthmew = searchRequest.getText().toString();
                 Log.e("sth","cac ban");
-                searchLandMark("a");
+                searchLandMark(sthmew);
                 Log.e("sth","hello");
             }
         });
-
 
         //l
         createEditFormTextList();

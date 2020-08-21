@@ -38,7 +38,7 @@
         </fragment>
 
         <EditText
-            android:id="@+id/searchRequest"
+            android:id="@+id/sr"
             android:layout_width="match_parent"
             android:layout_height="25dp"
             android:layout_gravity="right"
