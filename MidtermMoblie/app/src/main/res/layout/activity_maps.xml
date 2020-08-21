@@ -21,7 +21,6 @@
             android:scaleType="fitXY"
             android:src="@drawable/logout"
             android:text="Logout" />
-
         <fragment
             android:id="@+id/map"
             android:name="com.google.android.gms.maps.SupportMapFragment"
@@ -29,15 +28,33 @@
             android:layout_height="match_parent"
             android:layout_weight="10"
             tools:context=".MapsActivity" />
-        >
+
         <fragment
             android:id="@+id/autocomplete_fragment"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:name="com.google.android.libraries.places.widget.AutocompleteSupportFragment"
             >
-
         </fragment>
+
+        <EditText
+            android:id="@+id/searchRequest"
+            android:layout_width="match_parent"
+            android:layout_height="25dp"
+            android:layout_gravity="right"
+            android:layout_marginTop="30dp"
+            android:gravity="center"
+            android:inputType="text"
+            android:text="Request Title"
+            android:imeOptions="actionNext"
+            />
+
+        <Button
+            android:id="@+id/bts"
+            android:layout_width="25dp"
+            android:layout_height="25dp"
+            android:layout_marginTop="55dp"
+            android:text="Search" />
 
     </RelativeLayout>
 

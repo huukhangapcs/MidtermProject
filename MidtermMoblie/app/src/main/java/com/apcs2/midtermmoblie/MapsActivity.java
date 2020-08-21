@@ -33,6 +33,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.speech.tts.TextToSpeech;
+import android.text.Editable;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.KeyEvent;
@@ -127,6 +128,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     EditText eDescription;
     EditText eLocation;
     EditText ePhone;
+
+    EditText searchRequest;
+    Button searchRequestBt;
+
     Spinner sEmergency;
     CheckBox cbCurrentLocation;
     TextView tEmergency;
@@ -152,7 +157,53 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     }
 
+
+    public void searchLandMark(String _stringSearch){//tri viet
+        int max_danger=0;
+        boolean isFind=false;
+        boolean isOk=false;
+        Landmark result = null;
+        Log.e("sth",String.valueOf(_landmarks.size()));
+        Log.e("sth",_stringSearch);
+        if (_landmarks.size()!=0){
+            for(int i=0;i<_landmarks.size();i++){
+                Log.e("sth",String.valueOf(i));
+                isFind= _landmarks.get(i).getName().contains(_stringSearch);
+                Log.e("sth",String.valueOf(_landmarks.size()+"here 1"));
+
+                if (isFind ==true && _landmarks.get(i).get_emergencyLevel()>max_danger){
+                    Log.e("sth",String.valueOf(_landmarks.size()+"here 2"));
+                    isOk=true;
+                    result= _landmarks.get(i);
+                    Log.e("sth",String.valueOf(_landmarks.size()+"here 3"));
+
+                    max_danger= _landmarks.get(i).get_emergencyLevel();
+                    Log.e("sth",String.valueOf(_landmarks.size()+"here 4"));
+
+                }
+            }
+        }
+        else{
+            Toast.makeText(getApplicationContext(),
+                    "Nothing to search!",
+                            Toast.LENGTH_SHORT
+                    ).show();
+        }
+        if (isOk) {
+            moveCamera(result.getLatLng());
+        }
+        else{
+            Toast.makeText(getApplicationContext(),
+                    "Can't find!",
+                    Toast.LENGTH_SHORT
+            ).show();
+        }
+    }
+
+
+
     // API require money so it not work
+
     private void createAutosuggestionSerachAdress() {
         AutocompleteSupportFragment autocompleteFragment = (AutocompleteSupportFragment)
                 getSupportFragmentManager().findFragmentById(R.id.autocomplete_fragment);
@@ -197,6 +248,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         detailLocation = findViewById(R.id.detail_location);
         eTitle = findViewById(R.id.eTitle);
 
+        searchRequest= findViewById(R.id.searchRequest);
+        searchRequestBt= (Button)findViewById(R.id.bts);
+
+
         eDescription = findViewById(R.id.eDescription);
         eLocation = findViewById(R.id.eLocation);
         ePhone = findViewById(R.id.ePhone);
@@ -222,6 +277,19 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
             }
         });
+        searchRequestBt.setOnClickListener(new View.OnClickListener(){
+            @Override
+
+            public void onClick(View view) {
+                Log.e("sth","chung toi o day");
+                String pattern;
+                pattern = searchRequest.getText().toString();
+                Log.e("sth","cac ban");
+                searchLandMark("a");
+                Log.e("sth","hello");
+            }
+        });
+
 
         //l
         createEditFormTextList();
