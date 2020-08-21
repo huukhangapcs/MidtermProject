@@ -5,7 +5,7 @@ import com.google.android.gms.maps.model.Polyline;
 
 import java.util.ArrayList;
 
-public class Landmark {
+public class LandMark {
     private String _name;
     private String _description;
     private LatLng _latLng;
@@ -22,7 +22,7 @@ public class Landmark {
         return _latLng;
     }
 
-    public Landmark(String name, String description, String phone, LatLng latLng, int emergencyLevel, ArrayList<Polyline> directPolylines) {
+    public LandMark(String name, String description, String phone, LatLng latLng, int emergencyLevel, ArrayList<Polyline> directPolylines) {
         this._name = name;
         this._description = description;
         this._phone = phone;
@@ -71,3 +71,4 @@ public class Landmark {
         this.directPolylines = polylines;
     }
 }
+

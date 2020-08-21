@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ProgressBar;
@@ -15,9 +16,15 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
 
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+//import com.google.firebase.firestore.DocumentReference;
+//import com.google.firebase.firestore.FirebaseFirestore;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class Register extends AppCompatActivity {
     EditText name;
@@ -31,8 +38,10 @@ public class Register extends AppCompatActivity {
     String s_pass;
     String c_pass;
     int flag = 0;
+    String userID;
     ProgressBar progressBar;
     TextView has_account;
+//    protected FirebaseFirestore firebaseFirestore = FirebaseFirestore.getInstance();
     protected FirebaseAuth mFirebaseAuth = FirebaseAuth.getInstance();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,11 +57,7 @@ public class Register extends AppCompatActivity {
         done = (CardView) findViewById(R.id.cardViewDone);
         has_account = (TextView) findViewById(R.id.textView_hasAccount);
         progressBar =(ProgressBar) findViewById(R.id.progressBarReg);
-//        if (mFirebaseAuth.getCurrentUser() != null)
-//        {
-//            Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-//            startActivity(intent);
-//        }
+
     }
 
     @Override
@@ -89,6 +94,16 @@ public class Register extends AppCompatActivity {
             public void onComplete(@NonNull Task<AuthResult> task) {
                 if (task.isSuccessful())
                 {
+//                    userID = mFirebaseAuth.getCurrentUser().getUid();
+//                    DocumentReference documentReference = firebaseFirestore.collection("user").document(userID);
+//                    Map<String, Object> users = new HashMap<>();
+//                    users.put("Name", s_name);
+//                    documentReference.set(users).addOnSuccessListener(new OnSuccessListener<Void>() {
+//                        @Override
+//                        public void onSuccess(Void aVoid) {
+//                            Log.d("Tag", "Save profile for " + userID);
+//                        }
+//                    });
                     progressBar.setVisibility(View.GONE);
                     Toast.makeText(Register.this, "Register successfully", Toast.LENGTH_LONG).show();
                     Intent intent = new Intent(getApplicationContext(), MainActivity.class);
